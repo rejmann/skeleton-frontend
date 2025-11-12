@@ -1,0 +1,10 @@
+#!/bin/bash
+
+PARAMS=$*
+CONTAINER_NAME="app"
+
+if [ -z "$(docker compose ps -q $CONTAINER_NAME)" ]; then
+    docker compose up -d --no-deps "$CONTAINER_NAME"
+fi
+
+docker compose exec -T -u $UID:$GID $CONTAINER_NAME $PARAMS

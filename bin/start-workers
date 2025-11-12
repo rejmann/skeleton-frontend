@@ -1,0 +1,7 @@
+#!/bin/bash
+
+bin/console messenger:stop-workers
+
+cp /var/www/html/devops/workers/supervisor.conf /etc/supervisor/supervisord.conf
+
+supervisord -c /etc/supervisor/supervisord.conf -n
