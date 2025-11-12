@@ -212,10 +212,6 @@ make start-crons
 - Manter cobertura de testes
 - Documentar classes e métodos públicos
 
-## 📝 Licença
-
-Este projeto é proprietário. Todos os direitos reservados.
-
 ## 🆘 Troubleshooting
 
 ### Problemas Comuns
