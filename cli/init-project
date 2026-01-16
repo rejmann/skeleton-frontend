@@ -1,0 +1,200 @@
+#!/bin/bash
+
+set -e
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Função para converter string para diferentes casos
+to_lowercase() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+to_uppercase() {
+    echo "$1" | tr '[:lower:]' '[:upper:]'
+}
+
+to_camelcase() {
+    echo "$1" | sed -r 's/(^|[_-])([a-z])/\U\2/g' | sed 's/^./\l&/'
+}
+
+to_pascalcase() {
+    echo "$1" | sed -r 's/(^|[_-])([a-z])/\U\2/g'
+}
+
+to_kebabcase() {
+    echo "$1" | sed 's/[_\s]/\-/g' | sed 's/\([A-Z]\)/\-\1/g' | sed 's/^-//' | tr '[:upper:]' '[:lower:]'
+}
+
+to_snakecase() {
+    echo "$1" | sed 's/[-\s]/\_/g' | sed 's/\([A-Z]\)/\_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]'
+}
+
+# Função para validar nome do projeto
+validate_project_name() {
+    local name="$1"
+    if [[ ! "$name" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
+        echo -e "${RED}Erro: Nome do projeto deve começar com uma letra e conter apenas letras, números, hífens e underscores.${NC}"
+        return 1
+    fi
+    return 0
+}
+
+echo -e "${BLUE}=== Inicializador de Projeto Skeleton ===${NC}"
+echo ""
+
+# Solicitar nome do projeto
+while true; do
+    echo -e "${YELLOW}Digite o nome do projeto:${NC}"
+    read -r PROJECT_NAME
+
+    if [[ -z "$PROJECT_NAME" ]]; then
+        echo -e "${RED}Erro: Nome do projeto não pode estar vazio.${NC}"
+        continue
+    fi
+
+    if validate_project_name "$PROJECT_NAME"; then
+        break
+    fi
+done
+
+# Converter para diferentes casos
+PROJECT_LOWER=$(to_lowercase "$PROJECT_NAME")
+PROJECT_UPPER=$(to_uppercase "$PROJECT_NAME")
+PROJECT_CAMEL=$(to_camelcase "$PROJECT_NAME")
+PROJECT_PASCAL=$(to_pascalcase "$PROJECT_NAME")
+PROJECT_KEBAB=$(to_kebabcase "$PROJECT_NAME")
+PROJECT_SNAKE=$(to_snakecase "$PROJECT_NAME")
+
+echo ""
+echo -e "${GREEN}Conversões do nome do projeto:${NC}"
+echo "  Original: $PROJECT_NAME"
+echo "  Lowercase: $PROJECT_LOWER"
+echo "  Uppercase: $PROJECT_UPPER"
+echo "  camelCase: $PROJECT_CAMEL"
+echo "  PascalCase: $PROJECT_PASCAL"
+echo "  kebab-case: $PROJECT_KEBAB"
+echo "  snake_case: $PROJECT_SNAKE"
+echo ""
+
+read -p "Confirma as alterações? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}Operação cancelada.${NC}"
+    exit 0
+fi
+
+echo -e "${BLUE}Iniciando substituições...${NC}"
+
+# Array de arquivos para modificar
+declare -a FILES_TO_MODIFY=(
+    ".env.dist"
+    "cli/mysql-cli"
+    "composer.json"
+    "Makefile"
+    "config/services.yaml"
+    "compose.yml"
+    "config/packages/doctrine.yaml"
+    "README.md"
+)
+
+# Função para fazer backup de um arquivo
+backup_file() {
+    local file="$1"
+    if [[ -f "$file" ]]; then
+        cp "$file" "$file.bak"
+        echo -e "  ${YELLOW}Backup criado: $file.bak${NC}"
+    fi
+}
+
+# Função para substituir skeleton por diferentes casos conforme necessário
+replace_in_file() {
+    local file="$1"
+    local temp_file
+    temp_file=$(mktemp)
+
+    case "$file" in
+        composer.json|*.json)
+            # Para arquivos JSON, usar PascalCase para namespaces
+            sed "s/Skeleton\\\\\\\\/$PROJECT_PASCAL\\\\\\\\/g" "$file" > "$temp_file"
+            sed -i "s/src\/Skeleton/src\/$PROJECT_PASCAL/g" "$temp_file"
+            ;;
+        *.yaml|*.yml)
+            # Para arquivos YAML, usar PascalCase para namespaces e kebab-case para containers
+            sed "s/Skeleton:/$PROJECT_PASCAL:/g" "$file" > "$temp_file"
+            sed -i "s/Skeleton/$PROJECT_PASCAL/g" "$temp_file"
+            sed -i "s/skeleton-/$PROJECT_KEBAB-/g" "$temp_file"
+            sed -i "s/skeleton\.test/$PROJECT_KEBAB.test/g" "$temp_file"
+            sed -i "s/skeleton:skeleton/$PROJECT_LOWER:$PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/mysql\/skeleton/mysql\/$PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/MYSQL_DATABASE: skeleton/MYSQL_DATABASE: $PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/MYSQL_PASSWORD: skeleton/MYSQL_PASSWORD: $PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/MYSQL_USER: skeleton/MYSQL_USER: $PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/skeleton-network/$PROJECT_KEBAB-network/g" "$temp_file"
+            ;;
+        .env.dist|*.env)
+            # Para arquivos de ambiente
+            sed "s/skeleton\.test/$PROJECT_KEBAB.test/g" "$file" > "$temp_file"
+            sed -i "s/skeleton:skeleton/$PROJECT_LOWER:$PROJECT_LOWER/g" "$temp_file"
+            sed -i "s/mysql\/skeleton/mysql\/$PROJECT_LOWER/g" "$temp_file"
+            ;;
+        Makefile)
+            # Para Makefile
+            sed "s/skeleton\.test/$PROJECT_KEBAB.test/g" "$file" > "$temp_file"
+            ;;
+        README.md)
+            # Para README
+            sed "s/# Skeleton Project/# $PROJECT_PASCAL Project/g" "$file" > "$temp_file"
+            sed -i "s/skeleton\.test/$PROJECT_KEBAB.test/g" "$temp_file"
+            sed -i "s/cd skeleton/cd $PROJECT_KEBAB/g" "$temp_file"
+            sed -i "s/skeleton\//$(to_kebabcase "$PROJECT_NAME")\//g" "$temp_file"
+            sed -i "s/└── Skeleton\//└── $PROJECT_PASCAL\//g" "$temp_file"
+            sed -i "s/Um skeleton/Um template/g" "$temp_file"
+            ;;
+        cli/mysql-cli)
+            # Para script MySQL
+            sed "s/--database=\"skeleton\"/--database=\"$PROJECT_LOWER\"/g" "$file" > "$temp_file"
+            ;;
+        *)
+            # Substituição genérica
+            sed "s/skeleton/$PROJECT_LOWER/g" "$file" > "$temp_file"
+            sed -i "s/Skeleton/$PROJECT_PASCAL/g" "$temp_file"
+            ;;
+    esac
+
+    mv "$temp_file" "$file"
+}
+
+# Processar cada arquivo
+for file in "${FILES_TO_MODIFY[@]}"; do
+    if [[ -f "$file" ]]; then
+        echo -e "${BLUE}Processando: $file${NC}"
+        backup_file "$file"
+        replace_in_file "$file"
+        echo -e "  ${GREEN}✓ Concluído${NC}"
+    else
+        echo -e "  ${YELLOW}⚠ Arquivo não encontrado: $file${NC}"
+    fi
+done
+
+# Renomear diretório src/Skeleton
+if [[ -d "src/Skeleton" ]]; then
+    echo -e "${BLUE}Renomeando diretório: src/Skeleton -> src/$PROJECT_PASCAL${NC}"
+    mv "src/Skeleton" "src/$PROJECT_PASCAL"
+    echo -e "  ${GREEN}✓ Diretório renomeado${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}=== Inicialização concluída com sucesso! ===${NC}"
+echo ""
+echo -e "${YELLOW}Próximos passos:${NC}"
+echo "1. Copie .env.dist para .env e ajuste as configurações se necessário"
+echo "2. Execute 'make setup' para configurar o ambiente"
+echo "3. Execute 'make up' para iniciar os containers"
+echo ""
+echo -e "${BLUE}Arquivos de backup foram criados com extensão .bak${NC}"
+echo -e "${BLUE}Você pode removê-los após verificar que tudo está funcionando corretamente.${NC}"
