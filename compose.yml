@@ -1,0 +1,80 @@
+services:
+  app:
+    container_name: skeleton-app
+    build:
+      context: .
+      dockerfile: ./devops/dev/php/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html:${CHACHED_VOLUMES:-cached}
+    networks:
+      - skeleton-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  worker:
+    container_name: skeleton-worker
+    build:
+      context: .
+      dockerfile: ./devops/dev/php/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html:${CHACHED_VOLUMES:-cached}
+    networks:
+      - skeleton-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: bin/start-workers
+
+  nginx:
+    container_name: skeleton-webserver
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - '8080:80'
+    volumes:
+      - ./:/var/www/html:${CHACHED_VOLUMES:-cached}
+      - ./devops/dev/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - skeleton-network
+    extra_hosts:
+      - 'skeleton.test:host-gateway'
+
+  mysql:
+    container_name: skeleton-database
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: skeleton
+      MYSQL_PASSWORD: skeleton
+      MYSQL_USER: skeleton
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3310:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - skeleton-network
+
+  redis:
+    container_name: skeleton-redis
+    image: redis:alpine
+    networks:
+      - skeleton-network
+
+networks:
+  skeleton-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

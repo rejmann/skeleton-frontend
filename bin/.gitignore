@@ -1,0 +1,8 @@
+*
+!console
+!.gitignore
+!start-workers
+!supervisorctl
+!decrypt-env
+!deploy-decrypt-env
+!encrypt-env
