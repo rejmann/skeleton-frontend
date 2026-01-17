@@ -21,7 +21,7 @@ composer-install: ## run composer install
 docker-up: ## start the dev server
 	docker compose up -d --remove-orphans
 
-up: docker-up composer-install migrate fix-permissions ## prepare and start the dev server
+up: docker-up composer-install npm-install npm-build migrate fix-permissions ## prepare and start the dev server
 
 setup: env git/hooks/pre-commit up ## initialize the project
 	grep -qxF '127.0.0.1	skeleton.test' /etc/hosts || echo '127.0.0.1	skeleton.test' | sudo tee -a /etc/hosts
@@ -41,6 +41,20 @@ migrate: ## run migrations
 
 migrations-check: ## Display migrations execution status
 	cli/console doctrine:migrations:status
+
+
+##### Frontend #####
+npm-install: ## install frontend dependencies
+	cli/npm install
+
+npm-build: npm-install ## builds the react frontend
+	cli/npm run build
+
+npm-watch:
+	cli/npm run watch
+
+npm-dev-server:
+	cli/vite-dev-server
 
 
 ##### static analysis #####

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+docker run --network="host" \
+    -it --rm -v "$PWD":/usr/src/app \
+    -w /usr/src/app node:lts-slim npm "$@"

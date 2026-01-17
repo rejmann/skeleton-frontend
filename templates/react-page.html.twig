@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+  <main>
+    <div id="react" data-props="{{ props|json_encode }}">Carregando...</div>
+  </main>
+{% endblock %}
+
+{% block stylesheets %}{% endblock %}
+
+{% block javascripts %}
+  {{ vite_entry_script_tags('controller/' ~ controller, {
+    dependency: 'react'
+  }) }}
+{% endblock %}
