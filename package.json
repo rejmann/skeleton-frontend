@@ -1,7 +1,7 @@
 {
-  "name": "bussolapro",
+  "name": "skeleton-frontend",
   "version": "1.0.0",
-  "repository": "git@github.com:rejmann/bussolapro.com.br.git",
+  "repository": "git@github.com:rejmann/skeleton-frontend.com.br.git",
   "license": "proprietary",
   "private": true,
   "type": "module",
@@ -33,6 +33,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
     "vite-plugin-symfony": "^8.2.2",
