@@ -6,17 +6,15 @@
       {% block title %}Welcome!{% endblock %}
     </title>
 
-    {% block stylesheets %}
-            {{ vite_entry_link_tags('app') }}
-      {{ vite_entry_link_tags('app') }}
-    {% endblock %}
+    {{ vite_entry_link_tags('app') }}
+
+    {% block stylesheets %}{% endblock %}
   </head>
   <body>
     {% block body %}{% endblock %}
 
-    {% block javascripts %}
-            {{ vite_entry_script_tags('app') }}
-      {{ vite_entry_script_tags('app') }}
-    {% endblock %}
+    {{ vite_entry_script_tags('app') }}
+
+    {% block javascripts %}{% endblock %}
   </body>
 </html>

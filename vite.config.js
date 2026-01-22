@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { readdirSync } from 'fs'
 import symfonyPlugin from 'vite-plugin-symfony'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig((config) => ({
   plugins: [
@@ -12,10 +13,12 @@ export default defineConfig((config) => ({
     }),
     symfonyPlugin(),
     tsconfigPaths(),
+    tailwindcss(),
   ],
   build: {
     rollupOptions: {
       input: {
+        app: join('assets/js', 'app.ts'),
         ...getControllerInputs('./assets/js/controller'),
       },
     },

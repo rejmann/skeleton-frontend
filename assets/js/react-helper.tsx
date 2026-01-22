@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client'
 
-function renderComponent(
+const render = (
   rootElement: HTMLElement,
   Component: React.FunctionComponent<any>,
-): React.ReactElement {
+) => {
   const props = rootElement.dataset.props
     ? JSON.parse(rootElement.dataset.props)
     : {}
@@ -11,14 +11,18 @@ function renderComponent(
   return <Component {...props} />
 }
 
-export default function renderPage(
-  rootElementId: string,
+export const renderComponent = (
   page: React.FunctionComponent<any>,
-) {
-  const container = document.getElementById(rootElementId)
+  rootElementId = 'react',
+) => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById(rootElementId)
+    if (!container) {
+      console.error(`Container #${rootElementId} não encontrado`)
+      return
+    }
 
-  if (container) {
     const root = createRoot(container)
-    root.render(renderComponent(container, page))
-  }
+    root.render(render(container, page))
+  })
 }

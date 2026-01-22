@@ -6,7 +6,7 @@ WORKDIR /var/www/html
 RUN npm install --pure-lockfile
 
 COPY --chown=www-data:www-data ./assets /var/www/html/assets
-COPY --chown=www-data:www-data ./tsconfig.json ./vite.config.js ./tailwind.config.js ./postcss.config.js /var/www/html/
+COPY --chown=www-data:www-data ./tsconfig.json ./vite.config.js /var/www/html/
 
 FROM php:8.2-fpm
 

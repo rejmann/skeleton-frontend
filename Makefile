@@ -53,7 +53,7 @@ npm-build: npm-install ## builds the react frontend
 npm-watch:
 	cli/npm run watch
 
-npm-dev-server:
+vite-dev-server:
 	cli/vite-dev-server
 
 
