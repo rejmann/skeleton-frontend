@@ -252,6 +252,71 @@ cli/console cache:clear
 ```
 
 ## 📚 Documentação Adicional
+- **Usando React com Twig**
+
+- **Visão rápida:** O projeto usa Vite + React. As entradas do Vite para scripts do lado cliente estão em `assets/js/controller/*` e os componentes React em `assets/js/app/`. O helper de montagem é `assets/js/react-helper.tsx`, que monta o componente em um elemento DOM com id `react` lendo `data-props` para as props.
+
+- **Passos para adicionar uma página React:**
+
+    1. **Crie o componente React** em `assets/js/app/pages/MyPage.tsx` (exemplo mínimo):
+
+    ```tsx
+    export function MyPage({ message }: { message: string }) {
+        return <div>{message}</div>
+    }
+    ```
+
+    2. **Adicione um entry controller** em `assets/js/controller/my-page.ts` para montar o componente (esses arquivos viram entradas do Vite):
+
+    ```ts
+    import { Welcome } from '@app/pages/Welcome'
+    import { renderComponent } from 'js/react-helper'
+
+    renderComponent(Welcome)
+    ```
+
+    3. **Renderize a página pelo Symfony** usando o helper `renderReact` disponível no `DefaultController` (veja `src/App/Controller/DefaultController.php`). Exemplo de uso em um controller Symfony:
+
+    ```php
+    // dentro de um controller
+    return $this->renderReact(
+            title: 'Minha Página React',
+            controller: 'welcome',
+            props: ['message' => 'Bem-vindo ao projeto!']
+    );
+    ```
+
+    4. **Twig**: o template `templates/react-page.html.twig` já demonstra a integração — ele monta o container e inclui o bundle Vite correto:
+
+    ```twig
+    <div id="react" data-props="{{ props|json_encode }}">Carregando...</div>
+
+    {{ vite_entry_script_tags('controller/' ~ controller, {
+        dependency: 'react'
+    }) }}
+    ```
+
+- **Executando em desenvolvimento**
+
+- Start com HMR (recomendado durante desenvolvimento):
+
+    ```bash
+    make vite-dev-server
+    ```
+
+- **Build para produção**
+
+    ```bash
+    make npm-build
+    ```
+
+- **Observações**
+
+- - O helper `assets/js/react-helper.tsx` procura um elemento com id `react` e lê `data-props` como JSON para popular as props do componente.
+- - As entradas de `assets/js/controller/*` são automaticamente detectadas pelo `vite.config.js` como `controller/<nome>` — em Twig referencie usando `controller`.
+- - Caso precise de múltiplos mounts na mesma página, passe um segundo argumento para `renderComponent(Welcome, 'outro-id')` e crie o container correspondente no Twig.
+
+- **Documentação**
 
 - [Symfony Documentation](https://symfony.com/doc)
 - [Doctrine ORM](https://www.doctrine-project.org/projects/orm.html)
