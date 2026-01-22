@@ -1,7 +1,7 @@
 {
-  "name": "skeleton-frontend",
+  "name": "skeleton",
   "version": "1.0.0",
-  "repository": "git@github.com:rejmann/skeleton-frontend.com.br.git",
+  "repository": "git@github.com:rejmann/skeleton.com.br.git",
   "license": "proprietary",
   "private": true,
   "type": "module",
