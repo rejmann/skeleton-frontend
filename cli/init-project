@@ -95,6 +95,8 @@ declare -a FILES_TO_MODIFY=(
     ".env.dist"
     "cli/mysql-cli"
     "composer.json"
+    "package.json"
+    "package-lock.json"
     "Makefile"
     "config/services.yaml"
     "compose.yml"
@@ -113,6 +115,7 @@ replace_in_file() {
             # Para arquivos JSON, usar PascalCase para namespaces
             sed "s/Skeleton\\\\\\\\/$PROJECT_PASCAL\\\\\\\\/g" "$file" > "$temp_file"
             sed -i "s/src\/Skeleton/src\/$PROJECT_PASCAL/g" "$temp_file"
+            sed "s/skeleton/$PROJECT_LOWER/g" "$file" > "$temp_file"
             ;;
         *.yaml|*.yml)
             # Para arquivos YAML, usar PascalCase para namespaces e kebab-case para containers
@@ -188,3 +191,9 @@ echo "3. Execute 'make up' para iniciar os containers"
 echo ""
 echo -e "${BLUE}Arquivos de backup foram criados com extensão .bak${NC}"
 echo -e "${BLUE}Você pode removê-los após verificar que tudo está funcionando corretamente.${NC}"
+
+# Remover este script após execução
+script_path="$(readlink -f "${BASH_SOURCE[0]:-$0}")"
+if [[ -n "$script_path" && -f "$script_path" ]]; then
+    rm -f "$script_path" && echo -e "${GREEN}Removido init script: $script_path${NC}"
+fi
